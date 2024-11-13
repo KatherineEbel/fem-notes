@@ -10,7 +10,7 @@ export default function Index() {
       <h1 className="font-serif font-semibold">This is Noto Serif</h1>
       <h1 className="font-mono">This is Source Code Pro</h1>
       <h1>This is Inter</h1>
-      <button className="btn">Daisy UI</button>
+      <button className="btn btn-primary">Daisy UI</button>
     </div>
   )
 }
