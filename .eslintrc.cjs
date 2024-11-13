@@ -34,6 +34,7 @@ module.exports = {
         "plugin:react/jsx-runtime",
         "plugin:react-hooks/recommended",
         "plugin:jsx-a11y/recommended",
+        "prettier",
       ],
       settings: {
         react: {
@@ -70,7 +71,24 @@ module.exports = {
         "plugin:@typescript-eslint/recommended",
         "plugin:import/recommended",
         "plugin:import/typescript",
+        "prettier",
       ],
+      rules: {
+        "import/order": [
+          "error",
+          {
+            alphabetize: { caseInsensitive: true, order: 'asc'},
+            groups: [
+              "builtin",
+              "external",
+              "internal",
+              "parent",
+              "sibling",
+            ],
+            "newlines-between": "always",
+          },
+        ],
+      },
     },
 
     // Node

@@ -1,26 +1,25 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
+import type { LinksFunction } from '@remix-run/cloudflare'
 import {
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from '@remix-run/react'
 
-import "./tailwind.css";
+import fonts from '../styles/fonts.css?url'
+import styles from '../styles/tailwind.css?url'
 
 export const links: LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
+    rel: 'stylesheet',
+    href: styles,
   },
   {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    rel: 'stylesheet',
+    href: fonts,
   },
-];
+]
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -31,15 +30,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="font-sans">
         {children}
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
-  );
+  )
 }
 
 export default function App() {
-  return <Outlet />;
+  return <Outlet />
 }

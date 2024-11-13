@@ -1,22 +1,15 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 export default {
-  content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
+  content: ['./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       fontFamily: {
-        sans: [
-          "Inter",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif",
-          "Apple Color Emoji",
-          "Segoe UI Emoji",
-          "Segoe UI Symbol",
-          "Noto Color Emoji",
-        ],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        serif: ['"Noto Serif"', 'ui-serif', 'Georgia'],
+        mono: ['"Source Code Pro"', 'ui-monospace', 'SFMono-Regular'],
       },
     },
   },
-  plugins: [],
-} satisfies Config;
+  plugins: [require('daisyui')],
+} satisfies Config
