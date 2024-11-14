@@ -9,6 +9,7 @@ import {
 } from '@remix-run/react'
 import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from 'remix-themes'
 
+import { GeneralErrorBoundary } from '~/components/error-boundary'
 import { themeSessionResolver } from '~/session.server'
 
 import fonts from '../styles/fonts.css?url'
@@ -63,3 +64,5 @@ export function App() {
     </html>
   )
 }
+
+export const ErrorBoundary = GeneralErrorBoundary
