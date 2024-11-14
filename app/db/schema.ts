@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { InferInsertModel, InferSelectModel, sql } from 'drizzle-orm'
 import {
   sqliteTable as table,
   AnySQLiteColumn,
@@ -17,7 +17,7 @@ const timestamps = {
 export const user = table('users', {
   id: t.int('id').primaryKey({ autoIncrement: true }),
   email: t.text('email').notNull().unique(),
-  passwordHash: t.text('password_hash').notNull(),
+  passwordHash: t.text('password_hash'),
   ...timestamps,
 })
 
@@ -57,3 +57,9 @@ export const noteTag = table(
     }
   },
 )
+
+export type NewUser = InferInsertModel<typeof user>
+export type Note = InferSelectModel<typeof note>
+export type NewNote = InferInsertModel<typeof note>
+export type Tag = InferSelectModel<typeof tag>
+export type NewTag = InferInsertModel<typeof tag>

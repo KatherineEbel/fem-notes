@@ -35,7 +35,7 @@ CREATE UNIQUE INDEX `tags_name_unique` ON `tags` (`name`);--> statement-breakpoi
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text NOT NULL,
-	`password_hash` text NOT NULL,
+	`password_hash` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text
 );
