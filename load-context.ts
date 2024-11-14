@@ -22,7 +22,8 @@ interface CloudflareLoadContext {
   request: Request
 }
 
-let dbConnection: ReturnType<typeof connection> | null = null
+export type DBConnection = ReturnType<typeof connection>
+let dbConnection: DBConnection | null = null
 
 export function getLoadContext({
   context,

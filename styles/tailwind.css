@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .h1 {
+        @apply text-2xl capitalize;
+    }
+    .text-muted {
+        @apply text-neutral-600 dark:text-neutral-300
+    }
+}
