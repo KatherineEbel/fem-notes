@@ -12,7 +12,6 @@ import Logo from '~/components/Logo'
 import { authSchema } from '~/validation/user-validation'
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  console.log('signup action')
   return await authenticator.authenticate('user-pass', request, {
     successRedirect: '/login',
     failureRedirect: '/signup',
@@ -75,9 +74,6 @@ export default function Signup() {
           <label htmlFor={password.id} className="form-control w-full">
             <div className="label">
               <span className="label-text">Password</span>
-              <Link to="/forgot-password" className="label-text-alt underline">
-                Forgot
-              </Link>
             </div>
             <div className="relative">
               <input
