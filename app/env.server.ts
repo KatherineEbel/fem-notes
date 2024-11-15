@@ -1,24 +1,36 @@
 import { z, TypeOf } from 'zod'
 
-export const zodEnv = z.object({
-  CI: z.string().optional(),
-  CLOUDFLARE_ACCOUNT_ID: z.string(),
-  CLOUDFLARE_DATABASE_ID: z.string(),
-  CLOUDFLARE_D1_TOKEN: z.string(),
+export const zodEnv = z
+  .object({
+    CI: z.string().optional(),
+    CLOUDFLARE_ACCOUNT_ID: z.string(),
+    CLOUDFLARE_DATABASE_ID: z.string(),
+    CLOUDFLARE_D1_TOKEN: z.string(),
 
-  TOTP_SECRET: z.string(),
+    TOTP_SECRET: z.string(),
 
-  GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
 
-  PORT: z.number().optional().default(5173),
-  NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+    PORT: z.number().optional().default(5173),
+    NODE_ENV: z
+      .enum(['development', 'test', 'production'])
+      .default('development'),
 
-  RESEND_API_KEY: z.string(),
-  SUPPORT_EMAIL: z.string().email(),
-})
+    RESEND_API_KEY: z.string().optional(),
+    SUPPORT_EMAIL: z.string().email(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.NODE_ENV !== 'test') {
+      if (!data.RESEND_API_KEY) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'RESEND_API_KEY is required',
+          path: ['RESEND_API_KEY'],
+        })
+      }
+    }
+  })
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -41,10 +53,6 @@ try {
       .filter(Boolean)
       .join('\n  ')
 
-    // TODO: env variables for test
-    console.log(errorMessage)
-    if (process.env.NODE_ENV !== 'test') {
-      throw Error(`Missing environment variables:\n  ${errorMessage}`)
-    }
+    throw Error(`Missing environment variables:\n  ${errorMessage}`)
   }
 }
