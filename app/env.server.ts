@@ -41,6 +41,10 @@ try {
       .filter(Boolean)
       .join('\n  ')
 
-    throw Error(`Missing environment variables:\n  ${errorMessage}`)
+    // TODO: env variables for test
+    console.log(errorMessage)
+    if (process.env.NODE_ENV !== 'test') {
+      throw Error(`Missing environment variables:\n  ${errorMessage}`)
+    }
   }
 }
