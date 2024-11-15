@@ -1,6 +1,7 @@
 import { z, TypeOf } from 'zod'
 
 export const zodEnv = z.object({
+  CI: z.string().optional(),
   CLOUDFLARE_ACCOUNT_ID: z.string(),
   CLOUDFLARE_DATABASE_ID: z.string(),
   CLOUDFLARE_D1_TOKEN: z.string(),
@@ -9,6 +10,11 @@ export const zodEnv = z.object({
 
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+
+  PORT: z.number().optional().default(5173),
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
 
   RESEND_API_KEY: z.string(),
   SUPPORT_EMAIL: z.string().email(),

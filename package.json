@@ -13,6 +13,10 @@
     "migrations:gen": "drizzle-kit generate",
     "migrations:up": "drizzle-kit up",
     "start": "wrangler pages dev ./build/client",
+    "pretest:e2e:run": "pnpm run build",
+    "test:e2e": "pnpm run test:e2e:run --silent",
+    "test:e2e:run": "playwright test",
+    "test:e2e:install": "pnpm dlx playwright install --with-deps chromium",
     "typecheck": "tsc",
     "typegen": "wrangler types"
   },
@@ -43,7 +47,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241112.0",
+    "@playwright/test": "^1.48.2",
     "@remix-run/dev": "^2.14.0",
+    "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
