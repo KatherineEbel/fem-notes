@@ -30,3 +30,27 @@ export const authSchema = z.discriminatedUnion('intent', [
   signupSchema,
   loginSchema,
 ])
+
+export const forgotPasswordForm = z.object({
+  email: z.string().email(),
+})
+
+export const resetPasswordForm = z
+  .object({
+    password: z.string().min(8),
+    confirmPassword: z.string().min(8),
+  })
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Password and Confirm password must match',
+        path: ['confirmPassword'],
+      })
+      return
+    }
+  })
+
+export const verificationForm = z.object({
+  code: z.string().length(6),
+})

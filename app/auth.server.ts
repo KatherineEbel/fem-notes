@@ -7,19 +7,21 @@ import { eq } from 'drizzle-orm'
 import { Authenticator } from 'remix-auth'
 import { FormStrategy } from 'remix-auth-form'
 import { GoogleProfile, GoogleStrategy } from 'remix-auth-google'
+import { TOTPStrategy } from 'remix-auth-totp'
 
+import { getForgotPasswordEmail } from '~/components/email/forgot-password-email'
 import { user as userModel } from '~/db/schema'
+import { sendAuthEmail } from '~/modules/email/email.server'
 import { sessionStorage } from '~/session.server'
 import { authSchema, User } from '~/validation/user-validation'
 
-type AuthUser = Pick<User, 'id' | 'email'>
+export type AuthUser = Pick<User, 'id' | 'email'>
 
 const scryptAsync = promisify(scrypt)
 const keyLength = 64
 export const authenticator = new Authenticator<AuthUser>(sessionStorage)
 
 const formStrategy = new FormStrategy(async ({ context, form }) => {
-  console.log('form submitted')
   const submission = await parseWithZod(form, {
     schema: authSchema.superRefine(async (data, ctx) => {
       if (data.intent === 'signup') {
@@ -47,7 +49,6 @@ const formStrategy = new FormStrategy(async ({ context, form }) => {
   }
 
   let user: AuthUser | null
-  console.log('good submission', submission.value)
   switch (submission.value.intent) {
     case 'login':
       user = await loginEmailPassword(
@@ -80,7 +81,6 @@ const googleStrategy = new GoogleStrategy(
       : 'http://localhost:5173/google/callback',
   },
   async ({ profile, context }) => {
-    console.log('google profile', profile)
     if (!context) {
       throw new Error('Context is required')
     }
@@ -89,6 +89,40 @@ const googleStrategy = new GoogleStrategy(
 )
 
 authenticator.use(googleStrategy, 'google')
+
+const totpStrategy = new TOTPStrategy(
+  {
+    totpGeneration: {
+      digits: 6,
+      period: 60 * 5, // expire in 5 minutes
+    },
+    secret: process.env.TOTP_SECRET,
+    sendTOTP: async ({ magicLink, email, code }) => {
+      await sendAuthEmail({
+        react: getForgotPasswordEmail(code, magicLink),
+        subject: 'Your password reset code',
+        to: email,
+      })
+    },
+  },
+  async ({ email, context }) => {
+    if (!context) {
+      throw new Error('Context is required')
+    }
+    const user = await context
+      .db()
+      .select({ id: userModel.id, email: userModel.email })
+      .from(userModel)
+      .where(eq(userModel.email, email))
+      .get()
+    if (!user) {
+      throw new Error('User not found')
+    }
+    return user
+  },
+)
+
+authenticator.use(totpStrategy, 'TOTP')
 
 async function hash(password: string): Promise<string> {
   try {
@@ -189,4 +223,33 @@ export async function loginWithGoogle(
     console.error(e)
     throw e
   }
+}
+
+export async function resetPassword(
+  context: AppLoadContext,
+  email: string,
+  newPassword: string,
+) {
+  const user = await requireUser(context, email)
+  const passwordHash = await hash(newPassword)
+  return await context
+    .db()
+    .update(userModel)
+    .set({ passwordHash })
+    .where(eq(userModel.id, user.id))
+    .returning({ id: userModel.id, email: userModel.email })
+    .run()
+}
+
+async function requireUser(context: AppLoadContext, email: string) {
+  const user = await context
+    .db()
+    .select({ id: userModel.id, email: userModel.email })
+    .from(userModel)
+    .where(eq(userModel.email, email))
+    .get()
+  if (!user) {
+    throw Error('User not found')
+  }
+  return user
 }

@@ -11,7 +11,7 @@ type StatusHandler = (info: {
   params: Record<string, string | undefined>
 }) => React.ReactNode | null
 
-export function GeneralErrorBoundary({
+export default function GeneralErrorBoundary({
   defaultStatusHandler = ({ error }) => (
     <p>
       {error.status} {error.data}
@@ -32,14 +32,14 @@ export function GeneralErrorBoundary({
   }
 
   return (
-    <div className="text-h2 container flex items-center justify-center p-20">
+    <>
       {isRouteErrorResponse(error)
         ? (statusHandlers?.[error.status] ?? defaultStatusHandler)({
             error,
             params,
           })
         : unexpectedErrorHandler(error)}
-    </div>
+    </>
   )
 }
 
