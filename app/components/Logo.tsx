@@ -1,7 +1,10 @@
-export default function Logo() {
+import { clsx } from 'clsx'
+
+export default function Logo({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
+  const sizeClass = size === 'sm' ? 'h-6' : 'h-12 -ml-12'
   return (
     <svg
-      className="h-7 w-auto"
+      className={clsx(sizeClass, 'w-auto')}
       xmlns="http://www.w3.org/2000/svg"
       width="95"
       height="28"

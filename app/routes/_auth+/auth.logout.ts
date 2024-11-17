@@ -1,7 +1,9 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare'
 
-import { authenticator } from '~/auth.server'
+import { Auth } from '~/services/auth/auth.server'
 
-export async function action({ request }: ActionFunctionArgs) {
-  await authenticator.logout(request, { redirectTo: '/login' })
+export async function action({ context, request }: ActionFunctionArgs) {
+  await new Auth(context).authenticator.logout(request, {
+    redirectTo: '/login',
+  })
 }
