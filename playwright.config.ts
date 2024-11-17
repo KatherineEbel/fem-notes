@@ -1,15 +1,19 @@
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
-const PORT = 50123
+const PORT = process.env.PORT ?? '5174'
 
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 15 * 1000,
+  expect: {
+    timeout: 5 * 1000,
+  },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
     baseURL: `http://localhost:${PORT}`,
@@ -52,15 +56,4 @@ export default defineConfig({
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
   ],
-
-  webServer: {
-    command: `pnpm dev --port ${PORT}`,
-    port: PORT,
-    reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    env: {
-      NODE_ENV: 'test',
-    },
-  },
 })

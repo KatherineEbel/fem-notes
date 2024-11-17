@@ -6,32 +6,38 @@ import {
   LoaderFunctionArgs,
 } from '@remix-run/cloudflare'
 import { Form, redirect, useActionData, useLoaderData } from '@remix-run/react'
+import { z } from 'zod'
 
-import { authenticator } from '~/auth.server'
 import { InputOTPConform } from '~/components/input-otp'
 import Logo from '~/components/Logo'
-import { commitSession, getSession } from '~/session.server'
-import { verificationForm } from '~/validation/user-validation'
+import { Auth } from '~/services/auth/auth.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, {
+export const verifySchema = z.object({
+  code: z.string().length(6),
+})
+
+export async function loader({ context, request }: LoaderFunctionArgs) {
+  const auth = new Auth(context)
+  await auth.authenticator.isAuthenticated(request, {
     successRedirect: '/notes',
   })
 
   // Commit session to clear any `flash` error message.
-  const cookie = await getSession(request.headers.get('cookie'))
+  const sessionStorage = auth.sessionStorage
+  const cookie = await sessionStorage.getSession(request.headers.get('cookie'))
   const authEmail = cookie.get('auth:totp')
   const totp = cookie.get('auth:totp')
   const authError = cookie.get('auth:error')
   if (!authEmail || !totp) return redirect('/login')
   return data({ authError, authEmail } as const, {
     headers: {
-      'set-cookie': await commitSession(cookie),
+      'set-cookie': await sessionStorage.commitSession(cookie),
     },
   })
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
+  const authenticator = new Auth(context).authenticator
   try {
     return await authenticator.authenticate('TOTP', request, {
       throwOnError: true,
@@ -50,7 +56,7 @@ export default function Verify() {
   const lastResult = useActionData<typeof action>()
   const [form, { code }] = useForm({
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: verificationForm })
+      return parseWithZod(formData, { schema: verifySchema })
     },
   })
 

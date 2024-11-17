@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  - push
+
+jobs:
+  test:
+    name: 🔍Testing
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: 📦 Prepare the environment
+        run: |
+          echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> .dev.vars
+          echo "CLOUDFLARE_DATABASE_ID=${{ secrets.CLOUDFLARE_DATABASE_ID }}" >> .dev.vars
+          echo "CLOUDFLARE_D1_TOKEN=${{ secrets.CLOUDFLARE_D1_TOKEN }}" >> .dev.vars
+          echo "TOTP_SECRET=${{ secrets.TOTP_SECRET }}" >> .dev.vars
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .dev.vars
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .dev.vars
+          echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .dev.vars
+          echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .dev.vars
+          echo "NODE_ENV=test" >> .dev.vars 
+          echo "Environment variables are set."
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      # Step 5: Install Playwright Browsers
+      - name: 🎭 Install Playwright
+        run: pnpm exec playwright install --with-deps
+
+      # Step 6: Run Playwright Tests
+      - name: Run Playwright tests
+        run: pnpm exec playwright test
+
+      # Step 7: Upload Playwright report
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: 🧹 Clean up environment file
+        run: rm .dev.vars
+
+  lint:
+    name: ⬣ Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+        with:
+          node-version: lts/*
+      - name: ✨ Code format check
+        run: pnpm run format -- --check .
+      - name: ✅ Code linting
+        run: pnpm run lint

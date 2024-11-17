@@ -7,7 +7,6 @@ import { createPagesFunctionHandler } from '@remix-run/cloudflare-pages'
 import * as serverBuild from '../build/server'
 import { getLoadContext } from '../load-context'
 
-// TODO: passing build directly causing typescript error
 const build = serverBuild as unknown as ServerBuild
 
 export const onRequest = createPagesFunctionHandler<Env>({

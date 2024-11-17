@@ -7,16 +7,19 @@ import { AiOutlineGoogle } from 'react-icons/ai'
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
 import { LuInfo } from 'react-icons/lu'
 
-import { authenticator } from '~/auth.server'
 import Logo from '~/components/Logo'
+import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  return await authenticator.authenticate('user-pass', request, {
-    successRedirect: '/login',
-    failureRedirect: '/signup',
-    context,
-  })
+  return await new Auth(context).authenticator.authenticate(
+    'user-pass',
+    request,
+    {
+      successRedirect: '/login',
+      failureRedirect: '/signup',
+    },
+  )
 }
 
 export default function Signup() {

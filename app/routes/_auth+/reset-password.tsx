@@ -5,23 +5,42 @@ import { Form, redirect, useActionData } from '@remix-run/react'
 import React from 'react'
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
 import { LuInfo } from 'react-icons/lu'
+import { z } from 'zod'
 
-import { authenticator, AuthUser, resetPassword } from '~/auth.server'
 import Logo from '~/components/Logo'
-import { getSession } from '~/session.server'
-import { resetPasswordForm } from '~/validation/user-validation'
+import { Auth } from '~/services/auth/auth.server'
+import { AuthUser } from '~/services/auth/utils'
+
+const restPasswordSchema = z
+  .object({
+    password: z.string().min(8),
+    confirmPassword: z.string().min(8),
+  })
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Password and Confirm password must match',
+        path: ['confirmPassword'],
+      })
+      return
+    }
+  })
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const formData = await request.formData()
-  const submission = parseWithZod(formData, { schema: resetPasswordForm })
+  const submission = parseWithZod(formData, { schema: restPasswordSchema })
   if (submission.status !== 'success') {
     return submission.reply()
   }
 
-  const session = await getSession(request.headers.get('cookie'))
+  const authenticator = new Auth(context)
+  const session = await authenticator.sessionStorage.getSession(
+    request.headers.get('cookie'),
+  )
   try {
     const user = (await session.get(authenticator.sessionKey)) as AuthUser
-    await resetPassword(context, user.email, submission.value.password)
+    await Auth.resetPassword(context, user.email, submission.value.password)
     return redirect('/notes')
   } catch (e) {
     console.error(e)
@@ -31,8 +50,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  return authenticator.isAuthenticated(request, {
+export async function loader({ context, request }: LoaderFunctionArgs) {
+  return new Auth(context).authenticator.isAuthenticated(request, {
     failureRedirect: '/login',
   })
 }
@@ -42,7 +61,7 @@ export default function ResetPassword() {
   const [form, { password, confirmPassword }] = useForm({
     lastResult,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: resetPasswordForm })
+      return parseWithZod(formData, { schema: restPasswordSchema })
     },
     shouldRevalidate: 'onInput',
     shouldValidate: 'onBlur',

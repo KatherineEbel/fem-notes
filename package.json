@@ -4,21 +4,20 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix vite:build",
-    "deploy": "pnpm run build && wrangler pages deploy",
+    "start": "wrangler pages dev",
     "dev": "remix vite:dev --host",
+    "test": "playwright test --ui",
+    "deploy": "pnpm run build && wrangler pages deploy",
+    "build": "remix vite:build",
+    "format": "prettier --write .",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "local:migrations:apply": "wrangler d1 migrations apply fem-notes --local",
     "preview": "pnpm run build && wrangler pages dev",
     "migrations:gen": "drizzle-kit generate",
     "migrations:up": "drizzle-kit up",
-    "start": "wrangler pages dev ./build/client",
-    "pretest:e2e:run": "pnpm run build",
-    "test:e2e": "pnpm run test:e2e:run --silent",
-    "test:e2e:run": "playwright test",
-    "test:e2e:install": "pnpm dlx playwright install --with-deps chromium",
     "typecheck": "tsc",
-    "typegen": "wrangler types"
+    "typegen": "wrangler types types/worker-configuration.d.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@conform-to/dom": "^1.2.2",
@@ -28,10 +27,12 @@
     "@remix-run/cloudflare": "^2.14.0",
     "@remix-run/cloudflare-pages": "^2.14.0",
     "@remix-run/react": "^2.14.0",
+    "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.1",
     "drizzle-zod": "^0.5.1",
+    "fs-extra": "^11.2.0",
     "input-otp": "^1.4.1",
     "isbot": "^4.4.0",
     "react": "^18.3.1",
@@ -47,14 +48,17 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241112.0",
+    "@faker-js/faker": "^9.2.0",
     "@playwright/test": "^1.48.2",
     "@remix-run/dev": "^2.14.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "daisyui": "^4.12.14",
     "drizzle-kit": "^0.28.0",
     "eslint": "^8.57.1",
@@ -64,17 +68,25 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "miniflare": "^3.20241106.0",
+    "msw": "^2.6.5",
     "postcss": "^8.4.49",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "remix-flat-routes": "^0.6.5",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vite-tsconfig-paths": "^4.3.2",
-    "wrangler": "3.57.1"
+    "wrangler": "3.87.0"
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "lint-staged": {
+    "*.{js,mjs,ts,tsx,css,md,yml}": "prettier --write"
   }
 }

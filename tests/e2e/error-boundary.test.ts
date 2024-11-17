@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from '../playwright'
 
 test('Test root error boundary caught', async ({ page }) => {
   const pageUrl = '/does-not-exist'

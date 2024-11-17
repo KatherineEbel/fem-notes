@@ -2,16 +2,19 @@ import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { Form, useActionData, useNavigation } from '@remix-run/react'
+import { z } from 'zod'
 
-import { authenticator } from '~/auth.server'
 import Logo from '~/components/Logo'
-import { forgotPasswordForm } from '~/validation/user-validation'
+import { Auth } from '~/services/auth/auth.server'
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+})
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  return authenticator.authenticate('TOTP', request, {
+  return new Auth(context).authenticator.authenticate('TOTP', request, {
     successRedirect: '/verify',
     failureRedirect: '/forgot-password',
-    context,
   })
 }
 
@@ -21,7 +24,7 @@ export default function ForgotPassword() {
   const [form, { email }] = useForm({
     lastResult: navigation.state === 'idle' ? lastResult : null,
     onValidate({ formData }) {
-      const result = parseWithZod(formData, { schema: forgotPasswordForm })
+      const result = parseWithZod(formData, { schema: forgotPasswordSchema })
       console.log('validation result', result)
       return result
     },

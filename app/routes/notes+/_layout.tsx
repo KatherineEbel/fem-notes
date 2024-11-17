@@ -1,20 +1,18 @@
 import { LoaderFunctionArgs } from '@remix-run/cloudflare'
 import { Outlet } from '@remix-run/react'
 
-import { authenticator } from '~/auth.server'
+import { Auth } from '~/services/auth/auth.server'
 
-export async function loader({request}: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, {
+export async function loader({ context, request }: LoaderFunctionArgs) {
+  return await new Auth(context).authenticator.isAuthenticated(request, {
     failureRedirect: '/login',
   })
-  console.log(user)
-  return user
 }
 
 export default function NotesLayout() {
   return (
-      <div>
-        <Outlet/>
-      </div>
+    <div>
+      <Outlet />
+    </div>
   )
 }

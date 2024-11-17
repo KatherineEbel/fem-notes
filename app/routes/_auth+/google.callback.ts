@@ -1,9 +1,9 @@
 import { type LoaderFunctionArgs } from '@remix-run/cloudflare'
 
-import { authenticator } from '~/auth.server'
+import { Auth } from '~/services/auth/auth.server'
 
 export const loader = ({ context, request }: LoaderFunctionArgs) => {
-  return authenticator.authenticate('google', request, {
+  return new Auth(context).authenticator.authenticate('google', request, {
     successRedirect: '/notes',
     failureRedirect: '/login',
     context,
