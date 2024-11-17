@@ -10,3 +10,6 @@ database_name = "fem-notes"
 database_id = "ebc59c64-28b1-4f34-a1aa-6048027581ab"
 migrations_dir = "app/drizzle/migrations"
 preview_database_id = "DB"
+
+[vars]
+HOST_URL = "https://notes.kathyebel.dev"
