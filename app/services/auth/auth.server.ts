@@ -1,23 +1,29 @@
 import { parseWithZod } from '@conform-to/zod'
-import type { AppLoadContext, SessionStorage } from '@remix-run/cloudflare'
-import { createCookieSessionStorage } from '@remix-run/cloudflare'
+import {
+  AppLoadContext,
+  SessionStorage,
+  createCookieSessionStorage,
+} from '@remix-run/cloudflare'
 import { eq } from 'drizzle-orm'
-import { Authenticator } from 'remix-auth'
+import { Authenticator, AuthorizationError } from 'remix-auth'
 import { FormStrategy } from 'remix-auth-form'
 import { GoogleProfile, GoogleStrategy } from 'remix-auth-google'
 import { TOTPStrategy, TOTPVerifyParams } from 'remix-auth-totp'
 
 import { getForgotPasswordEmail } from '~/components/email/forgot-password-email'
 import { AuthUser, compare, hash, requireUser } from '~/services/auth/utils'
-import { Database, database, users } from '~/services/db/db.server'
+import { Database, database, SelectUser, users } from '~/services/db/db.server'
 import { EmailService } from '~/services/email/email.server'
 import { authSchema } from '~/validation/user-validation'
 
 export class Auth {
   private readonly emailService: EmailService
-  public readonly authenticator: Authenticator<AuthUser>
+  protected readonly authenticator: Authenticator<AuthUser>
+  public authenticate: Authenticator<AuthUser>['authenticate']
+  public isAuthenticated: Authenticator<AuthUser>['isAuthenticated']
   public readonly sessionStorage: SessionStorage
   public sessionKey: string
+  public sessionErrorKey: string
   public db: Database
 
   constructor(context: AppLoadContext) {
@@ -37,54 +43,41 @@ export class Auth {
     this.authenticator = new Authenticator<AuthUser>(this.sessionStorage, {
       throwOnError: true,
     })
+    this.authenticate = this.authenticator.authenticate.bind(this.authenticator)
+    this.isAuthenticated = this.authenticator.isAuthenticated.bind(
+      this.authenticator,
+    )
     this.sessionKey = this.authenticator.sessionKey
+    this.sessionErrorKey = this.authenticator.sessionErrorKey
 
     this.db = database(context.env.DB)
 
     this.authenticator.use(
       new FormStrategy(async ({ form }) => {
-        const submission = await parseWithZod(form, {
-          schema: authSchema.superRefine(async (data, ctx) => {
-            if (data.intent === 'signup') {
-              const user = await this.db
-                .select({ id: users.id, email: users.email })
-                .from(users)
-                .where(eq(users.email, data.email))
-                .get()
-              if (user) {
-                ctx.addIssue({
-                  code: 'custom',
-                  path: ['email'],
-                  message: 'This email is not available.',
-                })
-                return
-              }
-            }
-          }),
-          async: true,
-        })
+        const submission = parseWithZod(form, { schema: authSchema })
         if (submission.status !== 'success') {
-          throw submission.reply()
+          throw new AuthorizationError('Unable to authenticate.')
         }
 
-        let user: AuthUser | null
-        switch (submission.value.intent) {
+        const { intent, ...userData } = submission.value
+
+        const existingUser = await this.db.query.users.findFirst({
+          columns: { id: true, email: true, passwordHash: true },
+          where: eq(users.email, userData.email),
+        })
+
+        switch (intent) {
           case 'login':
-            user = await this.loginEmailPassword(
-              submission.value.email,
-              submission.value.password,
-            )
-            break
+            return {
+              ...(await this.loginPassword(existingUser, userData.password)),
+              passwordHash: undefined,
+            }
           case 'signup':
-            user = await this.signupEmailPassword(
-              submission.value.email,
-              submission.value.password,
-            )
+            if (existingUser) {
+              throw new AuthorizationError('Unable to authenticate.')
+            }
+            return this.signupEmailPassword(userData.email, userData.password)
         }
-        if (!user) {
-          throw submission.reply({ formErrors: ['Invalid credentials'] })
-        }
-        return user
       }),
       'user-pass',
     )
@@ -105,10 +98,7 @@ export class Auth {
             })
           },
         },
-        async ({ email, context }: TOTPVerifyParams) => {
-          if (!context) {
-            throw new Error('Context is required')
-          }
+        async ({ email }: TOTPVerifyParams) => {
           const user = await this.db
             .select({ id: users.id, email: users.email })
             .from(users)
@@ -130,10 +120,7 @@ export class Auth {
           clientSecret: context.env.GOOGLE_CLIENT_SECRET,
           callbackURL: `${context.env.HOST_URL}/auth/google/callback`,
         },
-        async ({ profile, context }) => {
-          if (!context) {
-            throw new Error('Context is required')
-          }
+        async ({ profile }) => {
           return this.loginWithGoogle(profile)
         },
       ),
@@ -166,11 +153,10 @@ export class Auth {
 
   public async loginWithGoogle(profile: GoogleProfile) {
     const email = profile.emails[0].value
-    const existingUser = await this.db
-      .select({ id: users.id, email: users.email })
-      .from(users)
-      .where(eq(users.email, email))
-      .get()
+    const existingUser = await this.db.query.users.findFirst({
+      columns: { id: true, email: true },
+      where: eq(users.email, email),
+    })
 
     if (existingUser) {
       return existingUser
@@ -187,41 +173,37 @@ export class Auth {
     }
   }
 
-  public async loginEmailPassword(email: string, password: string) {
-    const userWithPassword = await this.db
-      .select({
-        id: users.id,
-        email: users.email,
-        passwordHash: users.passwordHash,
-      })
-      .from(users)
-      .where(eq(users.email, email))
-      .get()
-
-    if (!userWithPassword) {
-      return null
+  public async loginPassword(
+    user: Pick<SelectUser, 'id' | 'email' | 'passwordHash'> | undefined,
+    tryPass: string,
+  ) {
+    if (!user || !user.passwordHash) {
+      throw new AuthorizationError(
+        'Check your credentials or log in with your third-party provider.',
+      )
     }
-
-    const passwordMatch = await compare(
-      password,
-      userWithPassword.passwordHash!,
-    )
+    const passwordMatch = await compare(tryPass, user.passwordHash)
     if (!passwordMatch) {
-      return null
+      throw new AuthorizationError('Invalid credentials')
     }
-    const { passwordHash: _, ...user } = userWithPassword
     return user
   }
 
   public async signupEmailPassword(email: string, password: string) {
     const passwordHash = await hash(password)
-    return this.db
-      .insert(users)
-      .values({
-        email,
-        passwordHash,
-      })
-      .returning({ id: users.id, email: users.email })
-      .get()
+    try {
+      return this.db
+        .insert(users)
+        .values({
+          email,
+          passwordHash,
+        })
+        .returning({ id: users.id, email: users.email })
+        .onConflictDoNothing({ target: users.email })
+        .get()
+    } catch (e) {
+      console.error(e)
+      throw new AuthorizationError('Signup Failed', e as Error)
+    }
   }
 }

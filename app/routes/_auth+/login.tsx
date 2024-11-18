@@ -1,25 +1,41 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
+import {
+  getFormProps,
+  getInputProps,
+  SubmissionResult,
+  useForm,
+} from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { Form, Link, useActionData, useNavigation } from '@remix-run/react'
+import { clsx } from 'clsx'
 import React from 'react'
 import { AiOutlineGoogle } from 'react-icons/ai'
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
+import { AuthorizationError } from 'remix-auth'
+import { redirectWithError } from 'remix-toast'
 
 import Logo from '~/components/Logo'
 import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'
 
+export async function loader({ context, request }: ActionFunctionArgs) {
+  const auth = new Auth(context)
+  return await auth.isAuthenticated(request, {
+    successRedirect: '/notes',
+  })
+}
+
 export async function action({ context, request }: ActionFunctionArgs) {
-  return await new Auth(context).authenticator.authenticate(
-    'user-pass',
-    request,
-    {
+  try {
+    return await new Auth(context).authenticate('user-pass', request, {
       successRedirect: '/notes',
-      failureRedirect: '/login',
-      context,
-    },
-  )
+    })
+  } catch (e) {
+    if (e instanceof Response) return e
+    if (e instanceof AuthorizationError) {
+      return redirectWithError('/login', e.message)
+    }
+  }
 }
 
 export default function Login() {
@@ -27,7 +43,10 @@ export default function Login() {
   const lastResult = useActionData<typeof action>()
   const id = React.useId()
   const [form, { email, password }] = useForm({
-    lastResult: navigation.state === 'idle' ? lastResult : null,
+    lastResult:
+      navigation.state === 'idle'
+        ? (lastResult as unknown as SubmissionResult)
+        : null,
     id,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: authSchema })
@@ -35,6 +54,7 @@ export default function Login() {
     shouldRevalidate: 'onInput',
     shouldValidate: 'onBlur',
   })
+
   const [showPassword, setShowPassword] = React.useState(false)
   return (
     <div className="card w-full text-base-content shadow-md md:max-w-xl dark:bg-base-100">
@@ -44,12 +64,6 @@ export default function Login() {
         <p className="text-sm text-neutral-content">
           Please log in to continue
         </p>
-
-        {form.errors ? (
-          <p className="label-text text-sm text-error">
-            {form.errors.join(', ')}
-          </p>
-        ) : null}
 
         <Form
           className="flex w-full flex-1 flex-col"
@@ -63,8 +77,19 @@ export default function Login() {
             <input
               {...getInputProps(email, { type: 'email' })}
               placeholder="email@example.com"
-              className="input input-bordered w-full"
+              className={clsx(
+                'input input-bordered w-full',
+                email.errors && 'input-error',
+              )}
             />
+
+            {email.errors ? (
+              <div className="label">
+                <span className="label-text-alt text-xs text-error">
+                  {email.errors.join(', ')}
+                </span>
+              </div>
+            ) : null}
           </label>
 
           <label htmlFor={password.id} className="form-control w-full">
@@ -79,7 +104,10 @@ export default function Login() {
                 {...getInputProps(password, {
                   type: showPassword ? 'text' : 'password',
                 })}
-                className="input input-bordered w-full"
+                className={clsx(
+                  'input input-bordered w-full',
+                  password.errors && 'input-error',
+                )}
               />
               <button
                 type="button"
@@ -97,12 +125,25 @@ export default function Login() {
                 ) : null}
               </button>
             </div>
+
+            {password.errors ? (
+              <div className="label">
+                <span className="label-text-alt text-xs text-error">
+                  {password.errors.join(', ')}
+                </span>
+              </div>
+            ) : null}
           </label>
           <button
             name="intent"
             value="login"
             className="btn btn-primary my-4 w-full"
+            type="submit"
           >
+            {navigation.state !== 'idle' &&
+            navigation.formAction?.includes('/login') ? (
+              <span className="loading loading-spinner" />
+            ) : null}
             Login
           </button>
         </Form>
@@ -112,7 +153,12 @@ export default function Login() {
         </p>
         <Form action="/auth/google" method="POST" className="w-full">
           <button className="btn btn-outline w-full">
-            <AiOutlineGoogle className="mr-4 h-5 w-5" />
+            {navigation.state !== 'idle' &&
+            navigation.formAction?.includes('google') ? (
+              <span className="loading loading-spinner" />
+            ) : (
+              <AiOutlineGoogle className="mr-4 h-5 w-5" />
+            )}
             Google
           </button>
         </Form>

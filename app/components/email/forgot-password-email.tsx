@@ -28,6 +28,9 @@ export default function ForgotPasswordEmail({
   )
 }
 
-export function getForgotPasswordEmail(code: string, magicLink: string): React.ReactElement {
-  return <ForgotPasswordEmail magicLink={magicLink} otp={code}/>
+export function getForgotPasswordEmail(
+  code: string,
+  magicLink: string,
+): React.ReactElement {
+  return <ForgotPasswordEmail magicLink={magicLink} otp={code} />
 }

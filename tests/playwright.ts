@@ -52,7 +52,9 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
       userId = user?.id
       return user
     })
-    await db.delete(users).where(eq(users.id, userId!))
+    if (userId) {
+      await db.delete(users).where(eq(users.id, userId))
+    }
   },
   login: async ({ wrangler }, use) => {
     const db = database(wrangler.env.DB)
@@ -61,10 +63,12 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
       const auth = new Auth({ env: wrangler.env })
       const email = options?.email ?? userEmail
       const password = options?.password ?? userPass
-      const user = await auth.loginEmailPassword(email, password)
-      if (!user) throw new Error('User not found')
-      userId = user.id
-      return user
+      const user = await db.query.users.findFirst({
+        columns: { id: true, email: true, passwordHash: true },
+        where: eq(users.email, email),
+      })
+      userId = user?.id
+      return await auth.loginPassword(user, password)
     })
     await db.delete(users).where(eq(users.id, userId!))
   },
