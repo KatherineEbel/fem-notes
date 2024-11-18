@@ -1,52 +1,69 @@
 @font-face {
-    font-family: 'Inter';
-    src: url('/fonts/inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: normal;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
-    font-display: swap;
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'Inter';
-    src: url('/fonts/inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: italic;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Italic-VariableFont_opsz,wght.ttf')
+    format('truetype');
+  font-weight: 400 900;
+  font-style: italic;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
 }
 
 @font-face {
-    font-family: 'Noto Serif';
-    src: url('/fonts/noto-serif/NotoSerif-VariableFont_wdth,wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: normal;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
-    font-display: swap;
+  font-family: 'Noto Serif';
+  src: url('/fonts/noto-serif/NotoSerif-VariableFont_wdth,wght.ttf')
+    format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'Noto Serif';
-    src: url('/fonts/noto-serif/NotoSerif-Italic-VariableFont_wdth,wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: italic;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
-    font-display: swap;
+  font-family: 'Noto Serif';
+  src: url('/fonts/noto-serif/NotoSerif-Italic-VariableFont_wdth,wght.ttf')
+    format('truetype');
+  font-weight: 400 900;
+  font-style: italic;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'Source Code Pro';
-    src: url('/fonts/source-code-pro/SourceCodePro-VariableFont_wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: normal;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
-    font-display: swap;
+  font-family: 'Source Code Pro';
+  src: url('/fonts/source-code-pro/SourceCodePro-VariableFont_wght.ttf')
+    format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'Source Code Pro';
-    src: url('/fonts/source-code-pro/SourceCodePro-Italic-VariableFont_wght.ttf') format('truetype');
-    font-weight: 400 900;
-    font-style: italic;
-    font-variation-settings: 'wght' 400, 'opsz' 14;
-    font-display: swap;
+  font-family: 'Source Code Pro';
+  src: url('/fonts/source-code-pro/SourceCodePro-Italic-VariableFont_wght.ttf')
+    format('truetype');
+  font-weight: 400 900;
+  font-style: italic;
+  font-variation-settings:
+    'wght' 400,
+    'opsz' 14;
+  font-display: swap;
 }

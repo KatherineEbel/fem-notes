@@ -16,7 +16,7 @@ jobs:
           node-version: lts/*
 
       # Step 3: Prepare the environment
-      - name:  Prepare the environment
+      - name: Prepare the environment
         run: |
           echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> .dev.vars
           echo "CLOUDFLARE_DATABASE_ID=${{ secrets.CLOUDFLARE_DATABASE_ID }}" >> .dev.vars
@@ -27,7 +27,7 @@ jobs:
           echo "TOTP_SECRET=${{ secrets.TOTP_SECRET }}" >> .dev.vars
           echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .dev.vars
           echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .dev.vars
-          echo "NODE_ENV=test" >> .dev.vars 
+          echo "NODE_ENV=test" >> .dev.vars
           echo "Environment variables are set."
 
       # Step 4: Install dependencies
@@ -44,15 +44,15 @@ jobs:
       - name: ✅ Code linting
         run: pnpm run lint
 
-      # Step 7: Install Playwright Browsers
-      - name:  Install Playwright
+      # Step 6: Install Playwright Browsers
+      - name: Install Playwright
         run: pnpm exec playwright install --with-deps
 
-      # Step 8: Run Playwright Tests
+      # Step 7: Run Playwright Tests
       - name: Run Playwright tests
         run: pnpm exec playwright test
 
-      # Step 9: Upload Playwright report
+      # Step 8: Upload Playwright report
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -60,7 +60,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # Step 10: Clean up environment file
-      - name:  Clean up environment file
+      # Step 9: Clean up environment file
+      - name: Clean up environment file
         if: always()
         run: rm .dev.vars
