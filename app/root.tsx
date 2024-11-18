@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/cloudflare'
+import { data, LinksFunction, LoaderFunctionArgs } from '@remix-run/cloudflare'
 import {
   Links,
   Meta,
@@ -7,7 +7,11 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react'
+import React from 'react'
+import { ToastContainer, toast as notify, Flip } from 'react-toastify'
+import toastStyles from 'react-toastify/dist/ReactToastify.css?url'
 import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from 'remix-themes'
+import { getToast } from 'remix-toast'
 
 import GeneralErrorBoundary from '~/components/error-boundary'
 import { themeSessionResolver } from '~/services/sessions.server'
@@ -16,6 +20,7 @@ import fonts from '../styles/fonts.css?url'
 import styles from '../styles/tailwind.css?url'
 
 export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: toastStyles },
   {
     rel: 'stylesheet',
     href: styles,
@@ -28,13 +33,18 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { getTheme } = await themeSessionResolver(request)
-  return {
-    theme: getTheme(),
-  }
+  const { toast, headers } = await getToast(request)
+  return data({ toast, theme: getTheme() }, { headers })
 }
 
 export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>()
+
+  React.useEffect(() => {
+    if (data.toast) {
+      notify(data.toast.message, { type: data.toast.type })
+    }
+  }, [data.toast])
   return (
     <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
       <App />
@@ -56,8 +66,12 @@ export function App() {
         <Links />
       </head>
       <body className="bg-base-300 font-sans text-base-content">
-        <input type="hidden" />
         <Outlet />
+        <ToastContainer
+          position="top-center"
+          transition={Flip}
+          theme={data.theme ?? ''}
+        />
         <ScrollRestoration />
         <Scripts />
       </body>

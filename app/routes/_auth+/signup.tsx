@@ -1,33 +1,36 @@
 import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { ActionFunctionArgs } from '@remix-run/cloudflare'
-import { Form, Link, useActionData, useNavigation } from '@remix-run/react'
+import { Form, Link, useNavigation } from '@remix-run/react'
+import { clsx } from 'clsx'
 import React from 'react'
 import { AiOutlineGoogle } from 'react-icons/ai'
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
 import { LuInfo } from 'react-icons/lu'
+import { AuthorizationError } from 'remix-auth'
+import { redirectWithError, redirectWithSuccess } from 'remix-toast'
 
 import Logo from '~/components/Logo'
 import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  return await new Auth(context).authenticator.authenticate(
-    'user-pass',
-    request,
-    {
-      successRedirect: '/login',
-      failureRedirect: '/signup',
-    },
-  )
+  const auth = new Auth(context)
+  try {
+    const result = await auth.authenticate('user-pass', request)
+    return redirectWithSuccess('/login', `Welcome ${result.email}!`)
+  } catch (e) {
+    if (e instanceof Response) return e
+    if (e instanceof AuthorizationError) {
+      return redirectWithError('/signup', e.message)
+    }
+  }
 }
 
 export default function Signup() {
   const navigation = useNavigation()
-  const lastResult = useActionData<typeof action>()
   const id = React.useId()
   const [form, { email, password }] = useForm({
-    lastResult: navigation.state === 'idle' ? lastResult : null,
     id,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: authSchema })
@@ -63,7 +66,10 @@ export default function Signup() {
             <input
               {...getInputProps(email, { type: 'email' })}
               placeholder="email@example.com"
-              className="input input-bordered w-full"
+              className={clsx(
+                'input input-bordered w-full',
+                password.errors && 'input-error',
+              )}
             />
             {email.errors ? (
               <div className="label">
@@ -83,7 +89,10 @@ export default function Signup() {
                 {...getInputProps(password, {
                   type: showPassword ? 'text' : 'password',
                 })}
-                className="input input-bordered w-full"
+                className={clsx(
+                  'input input-bordered w-full',
+                  password.errors && 'input-error',
+                )}
               />
               <button
                 type="button"
@@ -120,7 +129,12 @@ export default function Signup() {
             name="intent"
             value="signup"
             className="btn btn-primary mt-2 w-full"
+            type="submit"
           >
+            {navigation.state !== 'idle' &&
+            navigation.formAction?.includes('/login') ? (
+              <span className="loading loading-spinner" />
+            ) : null}
             Sign up
           </button>
         </Form>
@@ -128,7 +142,12 @@ export default function Signup() {
         <p className="text-neutral-500">Or log in with:</p>
         <Form action="/auth/google" method="POST" className="w-full">
           <button className="btn btn-outline w-full">
-            <AiOutlineGoogle className="mr-4 h-4 fill-current" />
+            {navigation.state !== 'idle' &&
+            navigation.formAction?.includes('google') ? (
+              <span className="loading loading-spinner" />
+            ) : (
+              <AiOutlineGoogle className="mr-4 h-5 w-5" />
+            )}
             Google
           </button>
         </Form>

@@ -1,16 +1,21 @@
 import { z } from 'zod'
 
 const userSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z
+    .string({ message: 'Email is required.' })
+    .email({ message: 'Please provide a valid email.' }),
 })
 
 export const signupSchema = userSchema.extend({
   intent: z.literal('signup'),
+  password: z
+    .string({ message: 'Password is required.' })
+    .min(8, { message: 'Password of at least 8 characters is required.' }),
 })
 
 export const loginSchema = userSchema.extend({
   intent: z.literal('login'),
+  password: z.string({ message: 'Password is required.' }),
 })
 
 export const authSchema = z.discriminatedUnion('intent', [
