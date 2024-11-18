@@ -15,7 +15,21 @@ jobs:
         with:
           node-version: lts/*
 
-      # Step 3: Prepare the environment
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      # Step 4: Code format check
+      - name: ✨ Code format check
+        run: pnpm exec prettier . --check
+
+      # Step 5: Code linting
+      - name: ✅ Code linting
+        run: pnpm run lint
+
+      # Step 6: Prepare the environment
       - name: Prepare the environment
         run: |
           echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> .dev.vars
@@ -30,29 +44,20 @@ jobs:
           echo "NODE_ENV=test" >> .dev.vars
           echo "Environment variables are set."
 
-      # Step 4: Install dependencies
-      - name: Install dependencies
+      # Step 7: Apply Database Migrations
+      - name: Apply Database Migrations
         run: |
-          npm install -g pnpm
-          pnpm install
+          pnpm run local:migrations:apply
 
-      # Step 5: Code format check
-      - name: ✨ Code format check
-        run: pnpm exec prettier . --check
-
-      # Step 6: Code linting
-      - name: ✅ Code linting
-        run: pnpm run lint
-
-      # Step 6: Install Playwright Browsers
+      # Step 8: Install Playwright Browsers
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps
 
-      # Step 7: Run Playwright Tests
+      # Step 9: Run Playwright Tests
       - name: Run Playwright tests
         run: pnpm exec playwright test
 
-      # Step 8: Upload Playwright report
+      # Step 10: Upload Playwright report
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -60,7 +65,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # Step 9: Clean up environment file
+      # Step 11: Clean up environment file
       - name: Clean up environment file
         if: always()
         run: rm .dev.vars
