@@ -38,7 +38,7 @@ jobs:
 
       # Step 5: Code format check
       - name: ✨ Code format check
-        run: pnpm run format -- --check .
+        run: pnpm exec prettier . --check
 
       # Step 6: Code linting
       - name: ✅ Code linting
