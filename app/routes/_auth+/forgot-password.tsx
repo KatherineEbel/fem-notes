@@ -12,7 +12,8 @@ const forgotPasswordSchema = z.object({
 })
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  return new Auth(context).authenticator.authenticate('TOTP', request, {
+  const auth = new Auth(context)
+  return auth.authenticate('TOTP', request, {
     successRedirect: '/verify',
     failureRedirect: '/forgot-password',
   })
@@ -24,9 +25,7 @@ export default function ForgotPassword() {
   const [form, { email }] = useForm({
     lastResult: navigation.state === 'idle' ? lastResult : null,
     onValidate({ formData }) {
-      const result = parseWithZod(formData, { schema: forgotPasswordSchema })
-      console.log('validation result', result)
-      return result
+      return parseWithZod(formData, { schema: forgotPasswordSchema })
     },
     shouldRevalidate: 'onInput',
     shouldValidate: 'onSubmit',

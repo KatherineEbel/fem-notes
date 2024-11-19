@@ -18,7 +18,7 @@ export const verifySchema = z.object({
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   const auth = new Auth(context)
-  await auth.authenticator.isAuthenticated(request, {
+  await auth.isAuthenticated(request, {
     successRedirect: '/notes',
   })
 
@@ -37,7 +37,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  const authenticator = new Auth(context).authenticator
+  const authenticator = new Auth(context)
   try {
     return await authenticator.authenticate('TOTP', request, {
       throwOnError: true,

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 
 export default function Logo({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
-  const sizeClass = size === 'sm' ? 'h-6' : 'h-12 -ml-12'
+  const sizeClass = size === 'sm' ? 'h-6' : 'h-12'
   return (
     <svg
       className={clsx(sizeClass, 'w-auto')}
