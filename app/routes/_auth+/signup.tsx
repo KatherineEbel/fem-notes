@@ -1,16 +1,16 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
+import { getFormProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { Form, Link, useNavigation } from '@remix-run/react'
-import { clsx } from 'clsx'
 import React from 'react'
 import { AiOutlineGoogle } from 'react-icons/ai'
-import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
-import { LuInfo } from 'react-icons/lu'
 import { AuthorizationError } from 'remix-auth'
 import { redirectWithError, redirectWithSuccess } from 'remix-toast'
 
 import Logo from '~/components/Logo'
+import InputField from '~/components/ui/input-field'
+import PasswordField from '~/components/ui/password-field'
+import SubmitButton from '~/components/ui/submit-button'
 import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'
 
@@ -38,7 +38,7 @@ export default function Signup() {
     shouldRevalidate: 'onInput',
     shouldValidate: 'onBlur',
   })
-  const [showPassword, setShowPassword] = React.useState(false)
+
   return (
     <div className="card w-full text-base-content shadow-md md:max-w-xl dark:bg-base-100">
       <div className="card-body w-full items-center p-4 text-center md:p-12">
@@ -59,84 +59,17 @@ export default function Signup() {
           method="POST"
           {...getFormProps(form)}
         >
-          <label htmlFor={email.id} className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Email Address</span>
-            </div>
-            <input
-              {...getInputProps(email, { type: 'email' })}
-              placeholder="email@example.com"
-              className={clsx(
-                'input input-bordered w-full',
-                password.errors && 'input-error',
-              )}
-            />
-            {email.errors ? (
-              <div className="label">
-                <span className="label-text-alt text-xs text-error">
-                  {email.errors.join(', ')}
-                </span>
-              </div>
-            ) : null}
-          </label>
+          <InputField
+            label="Email Address"
+            meta={email}
+            placeholder="email@example.com"
+            type="email"
+          />
 
-          <label htmlFor={password.id} className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Password</span>
-            </div>
-            <div className="relative">
-              <input
-                {...getInputProps(password, {
-                  type: showPassword ? 'text' : 'password',
-                })}
-                className={clsx(
-                  'input input-bordered w-full',
-                  password.errors && 'input-error',
-                )}
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <span className="sr-only">
-                  {showPassword ? 'Hide' : 'Show'} Password
-                </span>
-                {!showPassword ? (
-                  <HiOutlineEye className="h-5 w-auto text-neutral-500 dark:text-neutral-400" />
-                ) : null}
-                {showPassword ? (
-                  <HiOutlineEyeOff className="h-5 w-auto text-neutral-500 dark:text-neutral-400" />
-                ) : null}
-              </button>
-            </div>
-            {password.errors ? (
-              <div className="label">
-                <span className="label-text-alt text-xs text-error">
-                  {password.errors.join(', ')}
-                </span>
-              </div>
-            ) : (
-              <div className="label text-neutral-600">
-                <div className="label-text-alt flex items-center gap-1 text-neutral-600 dark:text-neutral-300">
-                  <LuInfo />
-                  <span>At least 8 characters</span>
-                </div>
-              </div>
-            )}
-          </label>
-          <button
-            name="intent"
-            value="signup"
-            className="btn btn-primary mt-2 w-full"
-            type="submit"
-          >
-            {navigation.state !== 'idle' &&
-            navigation.formAction?.includes('/login') ? (
-              <span className="loading loading-spinner" />
-            ) : null}
-            Sign up
-          </button>
+          <PasswordField label="Password" meta={password} showHelpText />
+          <SubmitButton name="intent" value="signup">
+            Sign Up
+          </SubmitButton>
         </Form>
         <div className="divider my-0 w-full" />
         <p className="text-neutral-500">Or log in with:</p>

@@ -1,4 +1,12 @@
+import { database, users } from '~/services/db/db.server'
+
 import { test, expect } from '../playwright'
+
+test.beforeEach(async ({ wrangler }) => {
+  const db = database(wrangler.env.DB)
+  console.log('clearing users table')
+  return db.delete(users)
+})
 
 test('directed to login after successful email/password signup', async ({
   page,
@@ -36,13 +44,14 @@ test('validation errors with invalid values', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('error if duplicate email used', async ({
-  page,
-  signup,
-  userPass,
-  userEmail,
-}) => {
-  await signup()
+test('error if duplicate email used', async ({ page, userPass, userEmail }) => {
+  await page.goto('/signup')
+  await page.getByRole('textbox', { name: /email/i }).fill(userEmail)
+  await page.getByRole('textbox', { name: /password/i }).fill(userPass)
+  await page.getByRole('button', { name: /sign up/i }).click()
+
+  await page.waitForURL('/login')
+  await page.context().clearCookies()
   await page.goto('/signup')
   await page.getByRole('textbox', { name: /email/i }).fill(userEmail)
   await page.getByRole('textbox', { name: /password/i }).fill(userPass)
