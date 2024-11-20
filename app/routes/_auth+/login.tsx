@@ -16,7 +16,6 @@ import { redirectWithError } from 'remix-toast'
 
 import Logo from '~/components/Logo'
 import InputField from '~/components/ui/input-field'
-import PasswordField from '~/components/ui/password-field'
 import SubmitButton from '~/components/ui/submit-button'
 import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'

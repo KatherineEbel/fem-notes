@@ -1,6 +1,6 @@
 import { FieldMetadata, getInputProps } from '@conform-to/react'
 import { clsx } from 'clsx'
-import React, { HTMLInputTypeAttribute } from 'react'
+import React from 'react'
 
 export type InputFieldProps = {
   label: string
