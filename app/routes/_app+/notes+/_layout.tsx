@@ -1,4 +1,12 @@
+import type { MetaFunction } from '@remix-run/cloudflare'
 import { NavLink, Outlet, useMatches, useParams } from '@remix-run/react'
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: 'Your Notes' },
+    { name: 'description', content: 'Notes App' },
+  ]
+}
 
 export default function NotesLayout() {
   const matches = useMatches()
