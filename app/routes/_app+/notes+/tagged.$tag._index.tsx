@@ -2,7 +2,6 @@ import { data, LoaderFunctionArgs } from '@remix-run/cloudflare'
 import { useLoaderData } from '@remix-run/react'
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  console.log({ params })
   const { tag } = params
   return data({ tag })
 }
