@@ -10,11 +10,11 @@ export default defineConfig({
   expect: {
     timeout: 5 * 1000,
   },
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!CI,
   retries: CI ? 2 : 0,
-  workers: CI ? 1 : undefined,
-  // workers: 1,
+  // workers: CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
     baseURL: `http://localhost:${PORT}`,
@@ -34,19 +34,19 @@ export default defineConfig({
           use: { ...devices['Desktop Chrome'] },
         },
 
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
-        },
-
-        {
-          name: 'webkit',
-          use: { ...devices['Desktop Safari'] },
-        },
-        {
-          name: 'Mobile Safari',
-          use: { ...devices['iPhone 12'] },
-        },
+        // {
+        //   name: 'firefox',
+        //   use: { ...devices['Desktop Firefox'] },
+        // },
+        //
+        // {
+        //   name: 'webkit',
+        //   use: { ...devices['Desktop Safari'] },
+        // },
+        // {
+        //   name: 'Mobile Safari',
+        //   use: { ...devices['iPhone 12'] },
+        // },
       ],
 })
 

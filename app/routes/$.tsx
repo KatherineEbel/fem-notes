@@ -49,7 +49,7 @@ export function ErrorBoundary() {
             </pre>
 
             <Link
-              to="/"
+              to="/notes"
               className="btn btn-primary btn-lg mt-6 flex items-center gap-2"
             >
               <TbArrowBigLeft className="h-6 w-6" />

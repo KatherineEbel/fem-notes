@@ -1,4 +1,5 @@
 import { NavLink } from '@remix-run/react'
+import { clsx } from 'clsx'
 import { AiOutlineSearch } from 'react-icons/ai'
 import { FiSettings } from 'react-icons/fi'
 
@@ -15,10 +16,25 @@ export default function TopNav() {
             placeholder="Search by title, content, or tags…"
           />
         </label>
-        <NavLink to="/settings" className="justify-between">
-          <FiSettings className="h-5 w-auto" />
-          <span className="sr-only">Settings</span>
-        </NavLink>
+        <nav className="menu">
+          <ul>
+            <li>
+              <NavLink to="/settings" className="justify-between">
+                {({ isActive }) => (
+                  <>
+                    <FiSettings
+                      className={clsx(
+                        isActive ? 'stroke-primary' : 'stroke-current',
+                        'h-5 w-auto',
+                      )}
+                    />
+                    <span className="sr-only">Settings</span>
+                  </>
+                )}
+              </NavLink>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
   )

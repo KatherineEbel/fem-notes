@@ -15,7 +15,7 @@ test('directed to notes page after successful email/password login', async ({
   await page.getByRole('textbox', { name: /password/i }).fill(userPass)
   await page.getByRole('button', { name: /login/i }).click()
   await page.waitForURL('/notes')
-  await expect(page.getByRole('button', { name: /logout/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /all notes/i })).toBeVisible()
 })
 
 test('validation errors are displayed', async ({ page }) => {

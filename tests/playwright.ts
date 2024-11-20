@@ -134,6 +134,6 @@ export const test = baseTest.extend<TestFixtures, WorkerFixtures>({
   ],
 })
 
-test.beforeEach(({ msw }) => {
+test.beforeEach(async ({ msw }) => {
   msw.resetHandlers()
 })

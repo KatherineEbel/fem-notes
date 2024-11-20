@@ -15,6 +15,9 @@ import { AuthorizationError } from 'remix-auth'
 import { redirectWithError } from 'remix-toast'
 
 import Logo from '~/components/Logo'
+import InputField from '~/components/ui/input-field'
+import PasswordField from '~/components/ui/password-field'
+import SubmitButton from '~/components/ui/submit-button'
 import { Auth } from '~/services/auth/auth.server'
 import { authSchema } from '~/validation/user-validation'
 
@@ -49,7 +52,9 @@ export default function Login() {
         : null,
     id,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: authSchema })
+      const result = parseWithZod(formData, { schema: authSchema })
+      console.log(result)
+      return result
     },
     shouldRevalidate: 'onInput',
     shouldValidate: 'onBlur',
@@ -70,28 +75,13 @@ export default function Login() {
           method="POST"
           {...getFormProps(form)}
         >
-          <label htmlFor={email.id} className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Email Address</span>
-            </div>
-            <input
-              {...getInputProps(email, { type: 'email' })}
-              placeholder="email@example.com"
-              className={clsx(
-                'input input-bordered w-full',
-                email.errors && 'input-error',
-              )}
-            />
+          <InputField
+            meta={email}
+            label="Email Address"
+            placeholder="email@example.com"
+          />
 
-            {email.errors ? (
-              <div className="label">
-                <span className="label-text-alt text-xs text-error">
-                  {email.errors.join(', ')}
-                </span>
-              </div>
-            ) : null}
-          </label>
-
+          {/* TODO: make password field more customizable */}
           <label htmlFor={password.id} className="form-control w-full">
             <div className="label">
               <span className="label-text">Password</span>
@@ -134,33 +124,32 @@ export default function Login() {
               </div>
             ) : null}
           </label>
-          <button
+          <SubmitButton
             name="intent"
             value="login"
-            className="btn btn-primary my-4 w-full"
-            type="submit"
+            loading={
+              navigation.state !== 'idle' &&
+              navigation.formAction?.includes('/login')
+            }
           >
-            {navigation.state !== 'idle' &&
-            navigation.formAction?.includes('/login') ? (
-              <span className="loading loading-spinner" />
-            ) : null}
             Login
-          </button>
+          </SubmitButton>
         </Form>
         <div className="divider my-0 w-full" />
         <p className="text-sm text-neutral-600 dark:text-neutral-300">
           Or log in with:
         </p>
         <Form action="/auth/google" method="POST" className="w-full">
-          <button className="btn btn-outline w-full">
-            {navigation.state !== 'idle' &&
-            navigation.formAction?.includes('google') ? (
-              <span className="loading loading-spinner" />
-            ) : (
-              <AiOutlineGoogle className="mr-4 h-5 w-5" />
-            )}
+          <SubmitButton
+            className="btn-outline"
+            loading={
+              navigation.state !== 'idle' &&
+              navigation.formAction?.includes('google')
+            }
+          >
+            <AiOutlineGoogle className="mr-4 h-5 w-5" />
             Google
-          </button>
+          </SubmitButton>
         </Form>
         <div className="divider my-0 w-full" />
         <p className="text-sm text-neutral-600">
