@@ -39,7 +39,7 @@ export default defineConfig({
       },
     }),
   ],
-  build: {
-    minify: true,
-  },
+  // build: {
+  //   minify: true,
+  // },
 })

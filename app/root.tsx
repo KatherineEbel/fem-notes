@@ -16,18 +16,23 @@ import { getToast } from 'remix-toast'
 import GeneralErrorBoundary from '~/components/error-boundary'
 import { themeSessionResolver } from '~/services/sessions.server'
 
-import fonts from '../styles/fonts.css?url'
 import styles from '../styles/tailwind.css?url'
 
 export const links: LinksFunction = () => [
+  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  {
+    rel: 'preconnect',
+    href: 'https://fonts.gstatic.com',
+    crossOrigin: 'anonymous',
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap',
+  },
   { rel: 'stylesheet', href: toastStyles },
   {
     rel: 'stylesheet',
     href: styles,
-  },
-  {
-    rel: 'stylesheet',
-    href: fonts,
   },
 ]
 
