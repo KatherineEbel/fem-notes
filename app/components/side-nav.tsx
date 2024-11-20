@@ -1,6 +1,6 @@
-import { NavLink, useLocation, useMatches } from '@remix-run/react'
+import { NavLink } from '@remix-run/react'
 import { clsx } from 'clsx'
-import { AiOutlineHome, AiOutlineTag } from 'react-icons/ai'
+import { AiOutlineTag } from 'react-icons/ai'
 import { LuChevronRight } from 'react-icons/lu'
 import { MdOutlineArchive } from 'react-icons/md'
 
